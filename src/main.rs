@@ -30,7 +30,13 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(render_bundle)?
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"]);
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
+        .with(systems::BallMoveSystem, "move_ball_system", &[])
+        .with(
+            systems::BounceBallSystem,
+            "bounce_system",
+            &["paddle_system", "move_ball_system"],
+        );
 
     let mut game = Application::new("./", Pong, game_data)?;
 

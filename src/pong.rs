@@ -9,11 +9,11 @@ use amethyst::renderer::{
 
 use crate::components::{Ball, Paddle, Side};
 
-const ARENA_WIDTH: f32 = 100.0;
-const ARENA_HEIGHT: f32 = 100.0;
-const BALL_VELOCITY_X: f32 = 75.0;
-const BALL_VELOCITY_Y: f32 = 50.0;
-const BALL_RADIUS: f32 = 2.0;
+pub const ARENA_WIDTH: f32 = 100.0;
+pub const ARENA_HEIGHT: f32 = 100.0;
+pub const BALL_VELOCITY_X: f32 = 25.0;
+pub const BALL_VELOCITY_Y: f32 = 12.0;
+pub const BALL_RADIUS: f32 = 2.0;
 
 pub struct Pong;
 
@@ -22,7 +22,6 @@ impl SimpleState for Pong {
         let sprite_sheet = init_sprite_sheet(data.world);
         init_camera(data.world);
         init_paddles(data.world, sprite_sheet.clone());
-        data.world.register::<Ball>(); // TODO: register ball in system automatically
         init_ball(data.world, sprite_sheet);
     }
     fn handle_event(
