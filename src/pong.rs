@@ -6,6 +6,7 @@ use amethyst::renderer::{
     Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
     SpriteSheetHandle, Texture, TextureMetadata,
 };
+use amethyst::input::{InputHandler};
 
 const ARENA_WIDTH: f32 = 100.0;
 const ARENA_HEIGHT: f32 = 100.0;
@@ -17,6 +18,14 @@ impl SimpleState for Pong {
         let sprite_sheet = init_sprite_sheet(data.world);
         init_camera(data.world);
         init_paddles(data.world, &sprite_sheet);
+    }
+    fn handle_event(&mut self, _data: StateData<'_, GameData<'_, '_>>, _event: StateEvent) -> SimpleTrans {
+        let input = _data.world.read_resource::<InputHandler<String, String>>();
+        if input.action_is_down("quit").unwrap_or(false) {
+            println!("SimpleState::action::quit");
+            return Trans::Quit;
+        }
+        Trans::None
     }
 }
 
@@ -62,8 +71,6 @@ fn init_camera(world: &mut World) {
 }
 
 fn init_paddles(world: &mut World, sprite_sheet: &SpriteSheetHandle) {
-    world.register::<Paddle>();
-
     let paddle_left = Paddle::new(Side::Left);
     let paddle_right = Paddle::new(Side::Right);
 

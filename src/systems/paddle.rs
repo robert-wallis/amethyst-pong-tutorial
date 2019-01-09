@@ -1,4 +1,4 @@
-use amethyst::core::Transform;
+use amethyst::core::{nalgebra::*, Transform};
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
 use amethyst::input::InputHandler;
 
@@ -20,10 +20,10 @@ impl<'s> System<'s> for PaddleSystem {
                 Side::Right => input.axis_value("right_paddle"),
             };
             if let Some(mv_amount) = movement {
-                let scaled_amount = 1.2 * mv_amount as f32;
-                transform.translate_y(scaled_amount);
+                let y = transform.translation().y + (1.2 * mv_amount as f32);
+                let y = clamp(y, 6.0, 100.0-6.0);
+                transform.set_y(y);
             }
         }
     }
-
 }
