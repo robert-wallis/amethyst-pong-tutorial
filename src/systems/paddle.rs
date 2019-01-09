@@ -5,6 +5,7 @@ use amethyst::input::InputHandler;
 
 pub struct PaddleSystem;
 
+#[allow(clippy::type_complexity)]
 impl<'s> System<'s> for PaddleSystem {
     type SystemData = (
         WriteStorage<'s, Transform>,

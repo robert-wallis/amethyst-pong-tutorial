@@ -1,4 +1,4 @@
-use crate::components::{Ball, Paddle, Side};
+use crate::components::{Ball, Paddle, Side, Velocity};
 use crate::pong::ARENA_HEIGHT;
 use amethyst::{
     core::transform::Transform,
@@ -10,21 +10,23 @@ pub struct BounceBallSystem;
 impl<'s> System<'s> for BounceBallSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,
+        WriteStorage<'s, Velocity>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
     );
 
-    fn run(&mut self, (mut balls, paddles, transforms): Self::SystemData) {
-        for (ball, ball_transform) in (&mut balls, &transforms).join() {
+    fn run(&mut self, (mut balls, mut velocities, paddles, transforms): Self::SystemData) {
+        for (ball, velocity, ball_transform) in (&mut balls, &mut velocities, &transforms).join() {
             let ball_pos = ball_transform.translation();
+            let velocity = &mut velocity.0;
 
             // bounce off arena ceiling
-            if ball_pos.y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0 {
-                ball.velocity[1] = -ball.velocity[1];
+            if ball_pos.y >= ARENA_HEIGHT - ball.radius && velocity.y > 0.0 {
+                velocity.y = -velocity.y;
             }
             // bounce off arena floor
-            if ball_pos.y <= ball.radius && ball.velocity[1] < 0.0 {
-                ball.velocity[1] = -ball.velocity[1];
+            if ball_pos.y <= ball.radius && velocity.y < 0.0 {
+                velocity.y = -velocity.y;
             }
 
             for (paddle, paddle_transform) in (&paddles, &transforms).join() {
@@ -38,10 +40,10 @@ impl<'s> System<'s> for BounceBallSystem {
                     px + paddle.width + ball.radius,
                     py + paddle.height + ball.radius,
                     py - ball.radius,
-                ) && (paddle.side == Side::Left && ball.velocity[0] < 0.0
-                    || paddle.side == Side::Right && ball.velocity[0] > 0.0)
+                ) && (paddle.side == Side::Left && velocity.x < 0.0
+                    || paddle.side == Side::Right && velocity.x > 0.0)
                 {
-                    ball.velocity[0] = -ball.velocity[0];
+                    velocity.x = -velocity.x;
                 }
             }
         }

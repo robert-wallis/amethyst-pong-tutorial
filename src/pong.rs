@@ -1,5 +1,5 @@
 use amethyst::assets::{AssetStorage, Loader};
-use amethyst::core::transform::Transform;
+use amethyst::core::{nalgebra::Vector2, transform::Transform};
 use amethyst::input::InputHandler;
 use amethyst::prelude::*;
 use amethyst::renderer::{
@@ -7,12 +7,12 @@ use amethyst::renderer::{
     SpriteSheetHandle, Texture, TextureMetadata,
 };
 
-use crate::components::{Ball, Paddle, Side};
+use crate::components::{Ball, Paddle, Side, Velocity};
 
 pub const ARENA_WIDTH: f32 = 100.0;
 pub const ARENA_HEIGHT: f32 = 100.0;
-pub const BALL_VELOCITY_X: f32 = 25.0;
-pub const BALL_VELOCITY_Y: f32 = 12.0;
+pub const BALL_VELOCITY_X: f32 = 12.0;
+pub const BALL_VELOCITY_Y: f32 = 25.0;
 pub const BALL_RADIUS: f32 = 2.0;
 
 pub struct Pong;
@@ -122,8 +122,8 @@ fn init_ball(world: &mut World, sprite_sheet: SpriteSheetHandle) {
         .with(sprite_render)
         .with(Ball {
             radius: BALL_RADIUS,
-            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
         })
+        .with(Velocity(Vector2::new(BALL_VELOCITY_X, BALL_VELOCITY_Y)))
         .with(transform)
         .build();
 }
