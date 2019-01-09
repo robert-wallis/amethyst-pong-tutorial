@@ -21,9 +21,9 @@ impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let sprite_sheet = init_sprite_sheet(data.world);
         init_camera(data.world);
-        init_paddles(data.world, &sprite_sheet);
+        init_paddles(data.world, sprite_sheet.clone());
         data.world.register::<Ball>(); // TODO: register ball in system automatically
-        init_ball(data.world, &sprite_sheet);
+        init_ball(data.world, sprite_sheet);
     }
     fn handle_event(
         &mut self,
@@ -54,7 +54,7 @@ fn init_camera(world: &mut World) {
         .build();
 }
 
-fn init_paddles(world: &mut World, sprite_sheet: &SpriteSheetHandle) {
+fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
     let paddle_left = Paddle::new(Side::Left);
     let paddle_right = Paddle::new(Side::Right);
 
@@ -65,7 +65,7 @@ fn init_paddles(world: &mut World, sprite_sheet: &SpriteSheetHandle) {
     right_transform.set_xyz(ARENA_WIDTH - paddle_left.width * 0.5, y, 0.0);
 
     let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet.clone(),
+        sprite_sheet,
         sprite_number: 0,
     };
 
@@ -109,12 +109,12 @@ fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     )
 }
 
-fn init_ball(world: &mut World, sprite_sheet: &SpriteSheetHandle) {
+fn init_ball(world: &mut World, sprite_sheet: SpriteSheetHandle) {
     let mut transform = Transform::default();
     transform.set_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
 
     let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet.clone(),
+        sprite_sheet,
         sprite_number: 1,
     };
 
