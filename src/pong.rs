@@ -1,15 +1,19 @@
 use amethyst::assets::{AssetStorage, Loader};
 use amethyst::core::transform::Transform;
-use amethyst::ecs::{Component, DenseVecStorage};
+use amethyst::input::InputHandler;
 use amethyst::prelude::*;
 use amethyst::renderer::{
     Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
     SpriteSheetHandle, Texture, TextureMetadata,
 };
-use amethyst::input::{InputHandler};
+
+use crate::components::{Ball, Paddle, Side};
 
 const ARENA_WIDTH: f32 = 100.0;
 const ARENA_HEIGHT: f32 = 100.0;
+const BALL_VELOCITY_X: f32 = 75.0;
+const BALL_VELOCITY_Y: f32 = 50.0;
+const BALL_RADIUS: f32 = 2.0;
 
 pub struct Pong;
 
@@ -18,8 +22,14 @@ impl SimpleState for Pong {
         let sprite_sheet = init_sprite_sheet(data.world);
         init_camera(data.world);
         init_paddles(data.world, &sprite_sheet);
+        data.world.register::<Ball>(); // TODO: register ball in system automatically
+        init_ball(data.world, &sprite_sheet);
     }
-    fn handle_event(&mut self, _data: StateData<'_, GameData<'_, '_>>, _event: StateEvent) -> SimpleTrans {
+    fn handle_event(
+        &mut self,
+        _data: StateData<'_, GameData<'_, '_>>,
+        _event: StateEvent,
+    ) -> SimpleTrans {
         let input = _data.world.read_resource::<InputHandler<String, String>>();
         if input.action_is_down("quit").unwrap_or(false) {
             println!("SimpleState::action::quit");
@@ -27,32 +37,6 @@ impl SimpleState for Pong {
         }
         Trans::None
     }
-}
-
-#[derive(PartialEq, Eq)]
-pub enum Side {
-    Left,
-    Right,
-}
-
-pub struct Paddle {
-    pub side: Side,
-    pub width: f32,
-    pub height: f32,
-}
-
-impl Paddle {
-    fn new(side: Side) -> Paddle {
-        Paddle {
-            side,
-            width: 4.0,
-            height: 16.0,
-        }
-    }
-}
-
-impl Component for Paddle {
-    type Storage = DenseVecStorage<Self>;
 }
 
 fn init_camera(world: &mut World) {
@@ -123,4 +107,24 @@ fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
         (),
         &sprite_sheet_store,
     )
+}
+
+fn init_ball(world: &mut World, sprite_sheet: &SpriteSheetHandle) {
+    let mut transform = Transform::default();
+    transform.set_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+
+    let sprite_render = SpriteRender {
+        sprite_sheet: sprite_sheet.clone(),
+        sprite_number: 1,
+    };
+
+    world
+        .create_entity()
+        .with(sprite_render)
+        .with(Ball {
+            radius: BALL_RADIUS,
+            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+        })
+        .with(transform)
+        .build();
 }

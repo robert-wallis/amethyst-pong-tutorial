@@ -1,8 +1,7 @@
+use crate::components::{Paddle, Side};
 use amethyst::core::{nalgebra::*, Transform};
 use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
 use amethyst::input::InputHandler;
-
-use crate::pong::{Paddle, Side};
 
 pub struct PaddleSystem;
 
@@ -21,7 +20,7 @@ impl<'s> System<'s> for PaddleSystem {
             };
             if let Some(mv_amount) = movement {
                 let y = transform.translation().y + (1.2 * mv_amount as f32);
-                let y = clamp(y, 6.0, 100.0-6.0);
+                let y = clamp(y, 6.0, 100.0 - 6.0);
                 transform.set_y(y);
             }
         }

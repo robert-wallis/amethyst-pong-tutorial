@@ -1,3 +1,3 @@
-mod paddle;
+pub mod paddle;
 
 pub use self::paddle::PaddleSystem;

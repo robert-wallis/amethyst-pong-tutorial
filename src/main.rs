@@ -9,6 +9,7 @@ use amethyst::{
     utils::application_root_dir,
 };
 
+mod components;
 mod pong;
 mod systems;
 use crate::pong::Pong;
@@ -45,6 +46,5 @@ fn load_display_config() -> DisplayConfig {
 
 fn load_input_bundle() -> Result<InputBundle<String, String>, ConfigError> {
     let path = format!("{}/resources/bindings_config.ron", application_root_dir());
-    let input_bundle = InputBundle::<String, String>::new().with_bindings_from_file(path);
-    input_bundle
+    InputBundle::<String, String>::new().with_bindings_from_file(path)
 }
