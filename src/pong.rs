@@ -7,10 +7,9 @@ use amethyst::renderer::{
     SpriteSheetHandle, Texture, TextureMetadata,
 };
 
-use crate::components::{Ball, Paddle, Side, Velocity};
+use super::arena::Arena;
+use super::components::{Ball, Paddle, Side, Velocity};
 
-pub const ARENA_WIDTH: f32 = 100.0;
-pub const ARENA_HEIGHT: f32 = 100.0;
 pub const BALL_VELOCITY_X: f32 = 12.0;
 pub const BALL_VELOCITY_Y: f32 = 25.0;
 pub const BALL_RADIUS: f32 = 2.0;
@@ -20,9 +19,11 @@ pub struct Pong;
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let sprite_sheet = init_sprite_sheet(data.world);
-        init_camera(data.world);
-        init_paddles(data.world, sprite_sheet.clone());
-        init_ball(data.world, sprite_sheet);
+        let arena = init_arena();
+        init_camera(data.world, &arena);
+        init_paddles(data.world, &arena, sprite_sheet.clone());
+        init_ball(data.world, &arena, sprite_sheet);
+        data.world.add_resource(arena);
     }
     fn handle_event(
         &mut self,
@@ -38,30 +39,37 @@ impl SimpleState for Pong {
     }
 }
 
-fn init_camera(world: &mut World) {
+fn init_arena() -> Arena {
+    Arena {
+        width: 100.0,
+        height: 100.0,
+    }
+}
+
+fn init_camera(world: &mut World, arena: &Arena) {
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
             0.0,
-            ARENA_WIDTH,
+            arena.width,
             0.0,
-            ARENA_HEIGHT,
+            arena.height,
         )))
         .with(transform)
         .build();
 }
 
-fn init_paddles(world: &mut World, sprite_sheet: SpriteSheetHandle) {
+fn init_paddles(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
     let paddle_left = Paddle::new(Side::Left);
     let paddle_right = Paddle::new(Side::Right);
 
     let mut left_transform = Transform::default();
     let mut right_transform = Transform::default();
-    let y = ARENA_HEIGHT / 2.0;
+    let y = arena.height / 2.0;
     left_transform.set_xyz(paddle_left.width * 0.5, y, 0.0);
-    right_transform.set_xyz(ARENA_WIDTH - paddle_left.width * 0.5, y, 0.0);
+    right_transform.set_xyz(arena.width - paddle_left.width * 0.5, y, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet,
@@ -108,9 +116,9 @@ fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     )
 }
 
-fn init_ball(world: &mut World, sprite_sheet: SpriteSheetHandle) {
+fn init_ball(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
     let mut transform = Transform::default();
-    transform.set_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+    transform.set_xyz(arena.width / 2.0, arena.height / 2.0, 0.0);
 
     let sprite_render = SpriteRender {
         sprite_sheet,

@@ -6,9 +6,11 @@ use amethyst::{
     input::InputBundle,
     prelude::*,
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
+    ui::{DrawUi, UiBundle},
     utils::application_root_dir,
 };
 
+mod arena;
 mod components;
 mod pong;
 mod systems;
@@ -22,7 +24,8 @@ fn main() -> amethyst::Result<()> {
     let pipe = Pipeline::build().with_stage(
         Stage::with_backbuffer()
             .clear_target([0.02, 0.02, 0.02, 1.0], 1.0)
-            .with_pass(DrawFlat2D::new()),
+            .with_pass(DrawFlat2D::new())
+            .with_pass(DrawUi::new()),
     );
     let render_bundle = RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor();
 
@@ -30,13 +33,15 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(render_bundle)?
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
+        .with_bundle(UiBundle::<String, String>::new())?
         .with(systems::PaddleSystem, "paddle_system", &["input_system"])
         .with(systems::BallMoveSystem, "move_ball_system", &[])
         .with(
             systems::BounceBallSystem,
             "bounce_system",
             &["paddle_system", "move_ball_system"],
-        );
+        )
+        .with(systems::WinnerSystem, "winner_system", &["bounce_system"]);
 
     let mut game = Application::new("./", Pong, game_data)?;
 

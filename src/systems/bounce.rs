@@ -1,8 +1,8 @@
+use crate::arena::Arena;
 use crate::components::{Ball, Paddle, Side, Velocity};
-use crate::pong::ARENA_HEIGHT;
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, ReadStorage, System, WriteStorage},
+    ecs::prelude::{Join, Read, ReadStorage, System, WriteStorage},
 };
 
 pub struct BounceBallSystem;
@@ -13,15 +13,16 @@ impl<'s> System<'s> for BounceBallSystem {
         WriteStorage<'s, Velocity>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
+        Read<'s, Arena>,
     );
 
-    fn run(&mut self, (mut balls, mut velocities, paddles, transforms): Self::SystemData) {
+    fn run(&mut self, (mut balls, mut velocities, paddles, transforms, arena): Self::SystemData) {
         for (ball, velocity, ball_transform) in (&mut balls, &mut velocities, &transforms).join() {
             let ball_pos = ball_transform.translation();
             let velocity = &mut velocity.0;
 
             // bounce off arena ceiling
-            if ball_pos.y >= ARENA_HEIGHT - ball.radius && velocity.y > 0.0 {
+            if ball_pos.y >= arena.height - ball.radius && velocity.y > 0.0 {
                 velocity.y = -velocity.y;
             }
             // bounce off arena floor
