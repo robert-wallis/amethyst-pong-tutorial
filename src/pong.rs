@@ -3,8 +3,8 @@ use amethyst::core::{nalgebra::Vector2, transform::Transform};
 use amethyst::input::InputHandler;
 use amethyst::prelude::*;
 use amethyst::renderer::{
-    Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
-    SpriteSheetHandle, Texture, TextureMetadata,
+    Camera, Flipped, PngFormat, Projection, ScreenDimensions, SpriteRender, SpriteSheet,
+    SpriteSheetFormat, SpriteSheetHandle, Texture, TextureMetadata,
 };
 
 use super::arena::Arena;
@@ -20,7 +20,7 @@ pub struct Pong;
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let sprite_sheet = init_sprite_sheet(data.world);
-        let arena = init_arena();
+        let arena = init_arena(data.world);
         init_camera(data.world, &arena);
         init_paddles(data.world, &arena, sprite_sheet.clone());
         init_ball(data.world, &arena, sprite_sheet);
@@ -42,10 +42,11 @@ impl SimpleState for Pong {
     }
 }
 
-fn init_arena() -> Arena {
+fn init_arena(world: &mut World) -> Arena {
+    let screen = world.read_resource::<ScreenDimensions>();
     Arena {
-        width: 100.0,
-        height: 100.0,
+        width: screen.width() / 4.,
+        height: screen.height() / 4.,
     }
 }
 
