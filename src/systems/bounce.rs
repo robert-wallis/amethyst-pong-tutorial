@@ -7,6 +7,7 @@ use amethyst::{
 
 pub struct BounceBallSystem;
 
+#[allow(clippy::type_complexity)]
 impl<'s> System<'s> for BounceBallSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,

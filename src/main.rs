@@ -13,6 +13,7 @@ use amethyst::{
 mod arena;
 mod components;
 mod pong;
+mod score;
 mod systems;
 use crate::pong::Pong;
 

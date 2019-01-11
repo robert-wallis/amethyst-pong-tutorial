@@ -9,6 +9,7 @@ use amethyst::renderer::{
 
 use super::arena::Arena;
 use super::components::{Ball, Paddle, Side, Velocity};
+use super::score;
 
 pub const BALL_VELOCITY_X: f32 = 12.0;
 pub const BALL_VELOCITY_Y: f32 = 25.0;
@@ -23,8 +24,10 @@ impl SimpleState for Pong {
         init_camera(data.world, &arena);
         init_paddles(data.world, &arena, sprite_sheet.clone());
         init_ball(data.world, &arena, sprite_sheet);
+        score::init(data.world);
         data.world.add_resource(arena);
     }
+
     fn handle_event(
         &mut self,
         _data: StateData<'_, GameData<'_, '_>>,
