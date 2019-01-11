@@ -12,9 +12,10 @@ impl<'s> System<'s> for PaddleSystem {
         ReadStorage<'s, Paddle>,
         Read<'s, InputHandler<String, String>>,
         Read<'s, Time>,
+        ReadExpect<'s, Arena>,
     );
 
-    fn run(&mut self, (mut transforms, paddles, input, time): Self::SystemData) {
+    fn run(&mut self, (mut transforms, paddles, input, time, arena): Self::SystemData) {
         for (paddle, transform) in (&paddles, &mut transforms).join() {
             let movement = match paddle.side {
                 Side::Left => input.axis_value("left_paddle"),
@@ -23,7 +24,7 @@ impl<'s> System<'s> for PaddleSystem {
             if let Some(mv_amount) = movement {
                 let y =
                     transform.translation().y + (time.delta_seconds() * 50.0 * mv_amount as f32);
-                let y = clamp(y, 6.0, 100.0 - 6.0);
+                let y = clamp(y, 6.0, arena.height - 6.0);
                 transform.set_y(y);
             }
         }

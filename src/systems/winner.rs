@@ -1,7 +1,7 @@
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, Read, ReadExpect, ReadStorage, System, Write, WriteStorage},
-    ui::{UiText},
+    ecs::prelude::{Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
+    ui::UiText,
 };
 
 use crate::arena::Arena;
@@ -20,10 +20,13 @@ impl<'s> System<'s> for WinnerSystem {
         WriteStorage<'s, UiText>,
         Write<'s, ScoreBoard>,
         ReadExpect<'s, ScoreText>,
-        Read<'s, Arena>,
+        ReadExpect<'s, Arena>,
     );
 
-    fn run(&mut self, (balls, mut velocities, mut locals, mut ui_texts, mut score_board, score_text, arena): Self::SystemData) {
+    fn run(
+        &mut self,
+        (balls, mut velocities, mut locals, mut ui_texts, mut score_board, score_text, arena): Self::SystemData,
+    ) {
         for (ball, velocity, transform) in (&balls, &mut velocities, &mut locals).join() {
             let ball_pos = transform.translation();
 

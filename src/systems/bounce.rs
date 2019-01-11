@@ -2,7 +2,7 @@ use crate::arena::Arena;
 use crate::components::{Ball, Paddle, Side, Velocity};
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, Read, ReadStorage, System, WriteStorage},
+    ecs::prelude::{Join, ReadExpect, ReadStorage, System, WriteStorage},
 };
 
 pub struct BounceBallSystem;
@@ -14,7 +14,7 @@ impl<'s> System<'s> for BounceBallSystem {
         WriteStorage<'s, Velocity>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
-        Read<'s, Arena>,
+        ReadExpect<'s, Arena>,
     );
 
     fn run(&mut self, (mut balls, mut velocities, paddles, transforms, arena): Self::SystemData) {
