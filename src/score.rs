@@ -1,6 +1,6 @@
 use amethyst::{
     assets::Loader,
-    ecs::prelude::{Entity},
+    ecs::prelude::Entity,
     prelude::{Builder, World},
     ui::{Anchor, TtfFormat, UiText, UiTransform},
 };

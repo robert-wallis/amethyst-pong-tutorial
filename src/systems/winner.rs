@@ -5,8 +5,8 @@ use amethyst::{
 };
 
 use crate::arena::Arena;
-use crate::score::{ScoreBoard, ScoreText};
 use crate::components::{Ball, Velocity};
+use crate::score::{ScoreBoard, ScoreText};
 use std::fmt;
 
 pub struct WinnerSystem;
@@ -44,14 +44,14 @@ impl<'s> System<'s> for WinnerSystem {
                     if let Some(text) = ui_texts.get_mut(score_text.left) {
                         text.text = score_board.left.to_string();
                     }
-                },
+                }
                 Winner::Right => {
                     score_board.right = (score_board.right + 1).min(999);
                     if let Some(text) = ui_texts.get_mut(score_text.right) {
                         text.text = score_board.right.to_string();
                     }
-                },
-                Winner::None => ()
+                }
+                Winner::None => (),
             }
 
             if let Winner::None = winner {

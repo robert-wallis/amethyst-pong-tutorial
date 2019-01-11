@@ -1,7 +1,10 @@
+use crate::arena::Arena;
 use crate::components::{Paddle, Side};
-use amethyst::core::{nalgebra::*, timing::Time, Transform};
-use amethyst::ecs::{Join, Read, ReadStorage, System, WriteStorage};
-use amethyst::input::InputHandler;
+use amethyst::{
+    core::{nalgebra::*, timing::Time, Transform},
+    ecs::{Join, Read, ReadExpect, ReadStorage, System, WriteStorage},
+    input::InputHandler,
+};
 
 pub struct PaddleSystem;
 
