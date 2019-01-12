@@ -1,5 +1,5 @@
 use amethyst::assets::{AssetStorage, Loader};
-use amethyst::core::{nalgebra::Vector2, transform::Transform};
+use amethyst::core::{transform::Transform};
 use amethyst::input::InputHandler;
 use amethyst::prelude::*;
 use amethyst::renderer::{
@@ -8,12 +8,9 @@ use amethyst::renderer::{
 };
 
 use super::arena::Arena;
-use super::components::{Ball, Paddle, Side, Velocity};
+use super::components::{Paddle, Side};
 use super::score;
-
-pub const BALL_VELOCITY_X: f32 = 12.0;
-pub const BALL_VELOCITY_Y: f32 = 25.0;
-pub const BALL_RADIUS: f32 = 2.0;
+use super::systems;
 
 pub struct Pong;
 
@@ -23,7 +20,7 @@ impl SimpleState for Pong {
         let arena = init_arena(data.world);
         init_camera(data.world, &arena);
         init_paddles(data.world, &arena, sprite_sheet.clone());
-        init_ball(data.world, &arena, sprite_sheet);
+        systems::BallMoveSystem::init_ball_entity(data.world, &arena, sprite_sheet);
         score::init(data.world);
         data.world.add_resource(arena);
     }
@@ -118,24 +115,4 @@ fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
         (),
         &sprite_sheet_store,
     )
-}
-
-fn init_ball(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
-    let mut transform = Transform::default();
-    transform.set_xyz(arena.width / 2.0, arena.height / 2.0, 0.0);
-
-    let sprite_render = SpriteRender {
-        sprite_sheet,
-        sprite_number: 1,
-    };
-
-    world
-        .create_entity()
-        .with(sprite_render)
-        .with(Ball {
-            radius: BALL_RADIUS,
-        })
-        .with(Velocity(Vector2::new(BALL_VELOCITY_X, BALL_VELOCITY_Y)))
-        .with(transform)
-        .build();
 }
