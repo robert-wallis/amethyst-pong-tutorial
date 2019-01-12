@@ -1,16 +1,20 @@
-use amethyst::assets::{AssetStorage, Loader};
-use amethyst::core::{transform::Transform};
-use amethyst::input::InputHandler;
-use amethyst::prelude::*;
-use amethyst::renderer::{
-    Camera, Flipped, PngFormat, Projection, ScreenDimensions, SpriteRender, SpriteSheet,
-    SpriteSheetFormat, SpriteSheetHandle, Texture, TextureMetadata,
+use crate::{
+    arena::Arena,
+    ball::Ball,
+    paddle::{Paddle, Side},
+    score,
 };
-
-use super::arena::Arena;
-use super::components::{Paddle, Side};
-use super::score;
-use super::systems;
+use amethyst::{
+    assets::{AssetStorage, Loader},
+    core::transform::Transform,
+    ecs::{Builder, World},
+    input::InputHandler,
+    renderer::{
+        Camera, Flipped, PngFormat, Projection, ScreenDimensions, SpriteRender, SpriteSheet,
+        SpriteSheetFormat, SpriteSheetHandle, Texture, TextureMetadata,
+    },
+    {GameData, SimpleState, SimpleTrans, StateData, StateEvent, Trans},
+};
 
 pub struct Pong;
 
@@ -20,7 +24,7 @@ impl SimpleState for Pong {
         let arena = init_arena(data.world);
         init_camera(data.world, &arena);
         init_paddles(data.world, &arena, sprite_sheet.clone());
-        systems::BallMoveSystem::init_ball_entity(data.world, &arena, sprite_sheet);
+        Ball::init_ball_entity(data.world, &arena, sprite_sheet);
         score::init(data.world);
         data.world.add_resource(arena);
     }

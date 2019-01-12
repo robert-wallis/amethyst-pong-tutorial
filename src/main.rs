@@ -1,21 +1,23 @@
 extern crate amethyst;
 
+use crate::pong::Pong;
 use amethyst::{
-    config::ConfigError,
+    config::{Config, ConfigError},
     core::transform::TransformBundle,
     input::InputBundle,
-    prelude::*,
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
+    {Application, GameDataBuilder},
 };
 
 mod arena;
-mod components;
+mod ball;
+mod paddle;
 mod pong;
 mod score;
-mod systems;
-use crate::pong::Pong;
+mod velocity;
+mod winner;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
@@ -35,14 +37,14 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         .with_bundle(input_bundle)?
         .with_bundle(UiBundle::<String, String>::new())?
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
-        .with(systems::BallMoveSystem, "move_ball_system", &[])
+        .with(paddle::PaddleSystem, "paddle_system", &["input_system"])
+        .with(ball::BallMoveSystem, "ball_move_system", &[])
         .with(
-            systems::BounceBallSystem,
-            "bounce_system",
-            &["paddle_system", "move_ball_system"],
+            ball::BallBounceSystem,
+            "ball_bounce_system",
+            &["paddle_system", "ball_move_system"],
         )
-        .with(systems::WinnerSystem, "winner_system", &["bounce_system"]);
+        .with(winner::WinnerSystem, "winner_system", &["ball_move_system"]);
 
     let mut game = Application::new("./", Pong, game_data)?;
 

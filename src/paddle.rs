@@ -1,10 +1,35 @@
 use crate::arena::Arena;
-use crate::components::{Paddle, Side};
 use amethyst::{
-    core::{nalgebra::*, timing::Time, Transform},
-    ecs::{Join, Read, ReadExpect, ReadStorage, System, WriteStorage},
+    core::{nalgebra::clamp, timing::Time, Transform},
+    ecs::{Component, DenseVecStorage, Join, Read, ReadExpect, ReadStorage, System, WriteStorage},
     input::InputHandler,
 };
+
+#[derive(PartialEq, Eq)]
+pub enum Side {
+    Left,
+    Right,
+}
+
+pub struct Paddle {
+    pub side: Side,
+    pub width: f32,
+    pub height: f32,
+}
+
+impl Paddle {
+    pub fn new(side: Side) -> Paddle {
+        Paddle {
+            side,
+            width: 4.0,
+            height: 16.0,
+        }
+    }
+}
+
+impl Component for Paddle {
+    type Storage = DenseVecStorage<Self>;
+}
 
 pub struct PaddleSystem;
 

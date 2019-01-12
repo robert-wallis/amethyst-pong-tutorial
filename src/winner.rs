@@ -1,12 +1,14 @@
+use crate::{
+    arena::Arena,
+    ball::Ball,
+    score::{ScoreBoard, ScoreText},
+    velocity::Velocity,
+};
 use amethyst::{
     core::transform::Transform,
     ecs::prelude::{Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
     ui::UiText,
 };
-
-use crate::arena::Arena;
-use crate::components::{Ball, Velocity};
-use crate::score::{ScoreBoard, ScoreText};
 use std::fmt;
 
 pub struct WinnerSystem;
