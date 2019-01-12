@@ -1,8 +1,12 @@
 use crate::arena::Arena;
 use amethyst::{
     core::{nalgebra::clamp, timing::Time, Transform},
-    ecs::{Component, DenseVecStorage, Join, Read, ReadExpect, ReadStorage, System, WriteStorage},
+    ecs::{
+        Builder, Component, DenseVecStorage, Join, Read, ReadExpect, ReadStorage, System, World,
+        WriteStorage,
+    },
     input::InputHandler,
+    renderer::{Flipped, SpriteRender, SpriteSheetHandle},
 };
 
 #[derive(PartialEq, Eq)]
@@ -24,6 +28,36 @@ impl Paddle {
             width: 4.0,
             height: 16.0,
         }
+    }
+    pub fn init_entities(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
+        let paddle_left = Paddle::new(Side::Left);
+        let paddle_right = Paddle::new(Side::Right);
+
+        let mut left_transform = Transform::default();
+        let mut right_transform = Transform::default();
+        let y = arena.height / 2.0;
+        left_transform.set_xyz(paddle_left.width * 0.5, y, 0.0);
+        right_transform.set_xyz(arena.width - paddle_left.width * 0.5, y, 0.0);
+
+        let sprite_render = SpriteRender {
+            sprite_sheet,
+            sprite_number: 0,
+        };
+
+        world
+            .create_entity()
+            .with(paddle_left)
+            .with(left_transform)
+            .with(sprite_render.clone())
+            .build();
+
+        world
+            .create_entity()
+            .with(paddle_right)
+            .with(right_transform)
+            .with(sprite_render)
+            .with(Flipped::Horizontal)
+            .build();
     }
 }
 

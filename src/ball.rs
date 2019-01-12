@@ -5,7 +5,7 @@ use crate::{
 };
 use amethyst::{
     core::{nalgebra::Vector2, timing::Time, transform::Transform},
-    ecs::prelude::{
+    ecs::{
         Builder, Component, DenseVecStorage, Join, Read, ReadExpect, ReadStorage, System, World,
         WriteStorage,
     },
@@ -25,7 +25,7 @@ impl Component for Ball {
 }
 
 impl Ball {
-    pub fn init_ball_entity(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
+    pub fn init_entity(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
         let mut transform = Transform::default();
         transform.set_xyz(arena.width / 2.0, arena.height / 2.0, 0.0);
 

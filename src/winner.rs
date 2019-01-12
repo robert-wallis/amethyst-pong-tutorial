@@ -6,7 +6,7 @@ use crate::{
 };
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
+    ecs::{Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
     ui::UiText,
 };
 use std::fmt;
