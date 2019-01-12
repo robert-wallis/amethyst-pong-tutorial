@@ -2,8 +2,8 @@ use crate::arena::Arena;
 use amethyst::{
     core::{nalgebra::clamp, timing::Time, Transform},
     ecs::{
-        Builder, Component, DenseVecStorage, Join, Read, ReadExpect, ReadStorage, System, World,
-        WriteStorage,
+        Builder, Component, DenseVecStorage, Entity, Join, Read, ReadExpect, ReadStorage, System,
+        World, WriteStorage,
     },
     input::InputHandler,
     renderer::{Flipped, SpriteRender, SpriteSheetHandle},
@@ -29,7 +29,11 @@ impl Paddle {
             height: 16.0,
         }
     }
-    pub fn init_entities(world: &mut World, arena: &Arena, sprite_sheet: SpriteSheetHandle) {
+    pub fn init_entities(
+        world: &mut World,
+        arena: &Arena,
+        sprite_sheet: SpriteSheetHandle,
+    ) -> (Entity, Entity) {
         let paddle_left = Paddle::new(Side::Left);
         let paddle_right = Paddle::new(Side::Right);
 
@@ -44,20 +48,21 @@ impl Paddle {
             sprite_number: 0,
         };
 
-        world
-            .create_entity()
-            .with(paddle_left)
-            .with(left_transform)
-            .with(sprite_render.clone())
-            .build();
-
-        world
-            .create_entity()
-            .with(paddle_right)
-            .with(right_transform)
-            .with(sprite_render)
-            .with(Flipped::Horizontal)
-            .build();
+        (
+            world
+                .create_entity()
+                .with(paddle_left)
+                .with(left_transform)
+                .with(sprite_render.clone())
+                .build(),
+            world
+                .create_entity()
+                .with(paddle_right)
+                .with(right_transform)
+                .with(sprite_render)
+                .with(Flipped::Horizontal)
+                .build(),
+        )
     }
 }
 

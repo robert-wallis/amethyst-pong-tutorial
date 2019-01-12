@@ -2,25 +2,41 @@ use crate::{arena::Arena, ball::Ball, paddle::Paddle, score::ScoreBoard};
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::{nalgebra::Vector2, transform::Transform},
-    ecs::{Builder, World},
+    ecs::{Builder, Entity, World},
     input::InputHandler,
     renderer::{
         Camera, PngFormat, Projection, ScreenDimensions, SpriteSheet, SpriteSheetFormat,
-        SpriteSheetHandle, Texture, TextureMetadata,
+        SpriteSheetHandle, Texture, TextureMetadata, WindowEvent,
     },
     {GameData, SimpleState, SimpleTrans, StateData, StateEvent, Trans},
 };
 
-pub struct Pong;
+pub struct Pong {
+    camera: Option<Entity>,
+    left_paddle: Option<Entity>,
+    right_paddle: Option<Entity>,
+}
+
+impl Pong {
+    pub fn new() -> Pong {
+        Pong {
+            camera: None,
+            left_paddle: None,
+            right_paddle: None,
+        }
+    }
+}
 
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
-        let arena = Arena::new(screen.x / 4., screen.y / 4.);
-        init_camera(world, &arena);
-        Paddle::init_entities(world, &arena, sprite_sheet.clone());
+        let arena = Arena::new_from_screen(screen.x, screen.y);
+        self.camera = Some(init_camera(world, &arena));
+        let (left, right) = Paddle::init_entities(world, &arena, sprite_sheet.clone());
+        self.left_paddle = Some(left);
+        self.right_paddle = Some(right);
         Ball::init_entity(world, &arena, sprite_sheet);
         ScoreBoard::init_entities(world);
         world.add_resource(arena);
@@ -28,19 +44,42 @@ impl SimpleState for Pong {
 
     fn handle_event(
         &mut self,
-        _data: StateData<'_, GameData<'_, '_>>,
-        _event: StateEvent,
+        data: StateData<'_, GameData<'_, '_>>,
+        event: StateEvent,
     ) -> SimpleTrans {
-        let input = _data.world.read_resource::<InputHandler<String, String>>();
-        if input.action_is_down("quit").unwrap_or(false) {
-            println!("SimpleState::action::quit");
-            return Trans::Quit;
+        let mut world = data.world;
+        {
+            let input = world.read_resource::<InputHandler<String, String>>();
+            if input.action_is_down("quit").unwrap_or(false) {
+                println!("SimpleState::action::quit");
+                return Trans::Quit;
+            }
+        }
+        if let StateEvent::Window(amethyst::winit::Event::WindowEvent {
+            event: WindowEvent::Resized(size),
+            ..
+        }) = event
+        {
+            let arena = Arena::new_from_screen(size.width as f32, size.height as f32);
+            if let Some(camera) = self.camera {
+                let _ = world.delete_entity(camera);
+            }
+            self.camera = Some(init_camera(&mut world, &arena));
+            if let Some(right_paddle) = self.right_paddle {
+                let mut transforms = world.write_storage::<Transform>();
+                if let Some(transform) = transforms.get(right_paddle) {
+                    let mut transform = transform.clone();
+                    transform.set_x(arena.width - 2.);
+                    let _ = transforms.insert(right_paddle, transform);
+                }
+            }
+            world.add_resource(arena);
         }
         Trans::None
     }
 }
 
-fn init_camera(world: &mut World, arena: &Arena) {
+fn init_camera(world: &mut World, arena: &Arena) -> Entity {
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world
@@ -52,7 +91,7 @@ fn init_camera(world: &mut World, arena: &Arena) {
             arena.height,
         )))
         .with(transform)
-        .build();
+        .build()
 }
 
 fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {

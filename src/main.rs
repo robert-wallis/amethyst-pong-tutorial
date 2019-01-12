@@ -46,7 +46,7 @@ fn main() -> amethyst::Result<()> {
         )
         .with(winner::WinnerSystem, "winner_system", &["ball_move_system"]);
 
-    let mut game = Application::new("./", Pong, game_data)?;
+    let mut game = Application::new("./", Pong::new(), game_data)?;
 
     game.run();
 
