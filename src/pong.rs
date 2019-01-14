@@ -45,10 +45,13 @@ impl SimpleState for Pong {
         let world = data.world;
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
+        let ball_resources = ball::BallResources {
+            sprite_sheet: sprite_sheet.clone(),
+        };
+        world.add_resource(ball_resources);
         let arena = Arena::new_from_screen(screen.x, screen.y);
         self.init_main_camera(world, &arena);
-        paddle::init_entities(world, &arena, sprite_sheet.clone());
-        ball::init_entity(world, &arena, sprite_sheet);
+        paddle::init_entities(world, &arena, sprite_sheet);
         score::init_entities(world);
         world.add_resource(arena);
     }

@@ -40,6 +40,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(input_bundle)?
         .with_bundle(UiBundle::<String, String>::new())?
         .with(paddle::PaddleSystem, "paddle_system", &["input_system"])
+        .with(ball::BallSpawnSystem, "ball_spawn_system", &[])
         .with(ball::BallMoveSystem, "ball_move_system", &[])
         .with(
             ball::BallBounceSystem,
