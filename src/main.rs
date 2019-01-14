@@ -8,7 +8,7 @@ use amethyst::{
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
-    {Application, GameDataBuilder},
+    {Application, GameDataBuilder, Logger, LogLevelFilter},
 };
 
 mod arena;
@@ -20,7 +20,9 @@ mod velocity;
 mod winner;
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    Logger::from_config(Default::default())
+        .level_for("gfx_device_gl", LogLevelFilter::Warn) // TODO: silence: [INFO][gfx_device_gl::factory]  Created buffer 5
+        .start();
 
     let display_config = load_display_config();
     let input_bundle = load_input_bundle()?;
