@@ -1,26 +1,53 @@
-use crate::{arena::Arena, ball::Ball, paddle::Paddle, score::ScoreBoard};
+use crate::{arena::Arena, ball::Ball, paddle, score::ScoreBoard};
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::{nalgebra::Vector2, transform::Transform},
-    ecs::{Builder, World},
+    ecs::{Builder, Entity, World},
     input::InputHandler,
     renderer::{
         Camera, PngFormat, Projection, ScreenDimensions, SpriteSheet, SpriteSheetFormat,
         SpriteSheetHandle, Texture, TextureMetadata,
     },
+    winit::{Event::WindowEvent, WindowEvent::Resized},
     {GameData, SimpleState, SimpleTrans, StateData, StateEvent, Trans},
 };
 
-pub struct Pong;
+/// The gameplay state.
+pub struct Pong {
+    /// Current main camera.
+    camera: Option<Entity>,
+}
+
+impl Pong {
+    pub fn new() -> Pong {
+        Pong { camera: None }
+    }
+
+    /// Create a new arena and update systems related to arena size.
+    fn resize_arena(&mut self, world: &mut World, size: (f32, f32)) {
+        let arena = Arena::new_from_screen(size.0, size.1);
+        self.init_main_camera(world, &arena);
+        paddle::update_paddle_locations(&world, &arena);
+        world.add_resource(arena);
+    }
+
+    /// Re-initialize the main camera, esp. when the arena size changes.
+    fn init_main_camera(&mut self, world: &mut World, arena: &Arena) {
+        if let Some(camera) = self.camera {
+            let _ = world.delete_entity(camera);
+        }
+        self.camera = Some(init_camera(world, arena))
+    }
+}
 
 impl SimpleState for Pong {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
-        let arena = Arena::new(screen.x / 4., screen.y / 4.);
-        init_camera(world, &arena);
-        Paddle::init_entities(world, &arena, sprite_sheet.clone());
+        let arena = Arena::new_from_screen(screen.x, screen.y);
+        self.init_main_camera(world, &arena);
+        paddle::init_entities(world, &arena, sprite_sheet.clone());
         Ball::init_entity(world, &arena, sprite_sheet);
         ScoreBoard::init_entities(world);
         world.add_resource(arena);
@@ -28,19 +55,34 @@ impl SimpleState for Pong {
 
     fn handle_event(
         &mut self,
-        _data: StateData<'_, GameData<'_, '_>>,
-        _event: StateEvent,
+        data: StateData<'_, GameData<'_, '_>>,
+        event: StateEvent,
     ) -> SimpleTrans {
-        let input = _data.world.read_resource::<InputHandler<String, String>>();
-        if input.action_is_down("quit").unwrap_or(false) {
-            println!("SimpleState::action::quit");
-            return Trans::Quit;
+        let mut world = data.world;
+        {
+            let input = world.read_resource::<InputHandler<String, String>>();
+            if input.action_is_down("quit").unwrap_or(false) {
+                println!("SimpleState::action::quit");
+                return Trans::Quit;
+            }
         }
+
+        #[allow(clippy::single_match)]
+        match event {
+            StateEvent::Window(WindowEvent {
+                event: Resized(size),
+                ..
+            }) => {
+                self.resize_arena(&mut world, (size.width as f32, size.height as f32));
+            }
+            _ => (),
+        }
+
         Trans::None
     }
 }
 
-fn init_camera(world: &mut World, arena: &Arena) {
+fn init_camera(world: &mut World, arena: &Arena) -> Entity {
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world
@@ -52,7 +94,7 @@ fn init_camera(world: &mut World, arena: &Arena) {
             arena.height,
         )))
         .with(transform)
-        .build();
+        .build()
 }
 
 fn init_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
