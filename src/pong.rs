@@ -1,4 +1,4 @@
-use crate::{arena::Arena, ball::Ball, paddle::Paddle, score::ScoreBoard};
+use crate::{arena::Arena, ball::Ball, paddle, score::ScoreBoard};
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::{nalgebra::Vector2, transform::Transform},
@@ -6,24 +6,37 @@ use amethyst::{
     input::InputHandler,
     renderer::{
         Camera, PngFormat, Projection, ScreenDimensions, SpriteSheet, SpriteSheetFormat,
-        SpriteSheetHandle, Texture, TextureMetadata, WindowEvent,
+        SpriteSheetHandle, Texture, TextureMetadata,
     },
+    winit::{Event::WindowEvent, WindowEvent::Resized},
     {GameData, SimpleState, SimpleTrans, StateData, StateEvent, Trans},
 };
 
+/// The gameplay state.
 pub struct Pong {
+    /// Current main camera.
     camera: Option<Entity>,
-    left_paddle: Option<Entity>,
-    right_paddle: Option<Entity>,
 }
 
 impl Pong {
     pub fn new() -> Pong {
-        Pong {
-            camera: None,
-            left_paddle: None,
-            right_paddle: None,
+        Pong { camera: None }
+    }
+
+    /// Create a new arena and update systems related to arena size.
+    fn resize_arena(&mut self, world: &mut World, size: (f32, f32)) {
+        let arena = Arena::new_from_screen(size.0, size.1);
+        self.update_main_camera(world, &arena);
+        paddle::update_paddle_locations(&world, &arena);
+        world.add_resource(arena);
+    }
+
+    /// Re-initialize the main camera, esp. when the arena size changes.
+    fn update_main_camera(&mut self, world: &mut World, arena: &Arena) {
+        if let Some(camera) = self.camera {
+            let _ = world.delete_entity(camera);
         }
+        self.camera = Some(init_main_camera(world, arena))
     }
 }
 
@@ -33,10 +46,8 @@ impl SimpleState for Pong {
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
         let arena = Arena::new_from_screen(screen.x, screen.y);
-        self.camera = Some(init_main_camera(world, &arena, self.camera));
-        let (left, right) = Paddle::init_entities(world, &arena, sprite_sheet.clone());
-        self.left_paddle = Some(left);
-        self.right_paddle = Some(right);
+        self.camera = Some(init_main_camera(world, &arena));
+        paddle::init_entities(world, &arena, sprite_sheet.clone());
         Ball::init_entity(world, &arena, sprite_sheet);
         ScoreBoard::init_entities(world);
         world.add_resource(arena);
@@ -55,31 +66,20 @@ impl SimpleState for Pong {
                 return Trans::Quit;
             }
         }
-        if let StateEvent::Window(amethyst::winit::Event::WindowEvent {
-            event: WindowEvent::Resized(size),
-            ..
-        }) = event
-        {
-            let arena = Arena::new_from_screen(size.width as f32, size.height as f32);
-            self.camera = Some(init_main_camera(&mut world, &arena, self.camera));
-            if let Some(right_paddle) = self.right_paddle {
-                let mut transforms = world.write_storage::<Transform>();
-                if let Some(transform) = transforms.get(right_paddle) {
-                    let mut transform = transform.clone();
-                    transform.set_x(arena.width - 2.);
-                    let _ = transforms.insert(right_paddle, transform);
-                }
-            }
-            world.add_resource(arena);
+
+        #[allow(clippy::single_match)]
+        match event {
+            StateEvent::Window(WindowEvent { event: Resized(size), .. }) => {
+                self.resize_arena(&mut world, (size.width as f32, size.height as f32));
+            },
+            _ => (),
         }
+
         Trans::None
     }
 }
 
-fn init_main_camera(world: &mut World, arena: &Arena, camera: Option<Entity>) -> Entity {
-    if let Some(camera) = camera {
-        let _ = world.delete_entity(camera);
-    }
+fn init_main_camera(world: &mut World, arena: &Arena) -> Entity {
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world

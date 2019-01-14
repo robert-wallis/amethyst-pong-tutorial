@@ -8,7 +8,7 @@ use amethyst::{
     renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
-    {Application, GameDataBuilder, Logger, LogLevelFilter},
+    {Application, GameDataBuilder, LogLevelFilter, Logger},
 };
 
 mod arena;
