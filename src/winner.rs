@@ -2,11 +2,10 @@ use crate::{
     arena::Arena,
     ball::Ball,
     score::{ScoreBoard, ScoreText},
-    velocity::Velocity,
 };
 use amethyst::{
     core::transform::Transform,
-    ecs::{Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
+    ecs::{Entities, Join, ReadExpect, ReadStorage, System, Write, WriteStorage},
     ui::UiText,
 };
 use std::fmt;
@@ -16,8 +15,8 @@ pub struct WinnerSystem;
 #[allow(clippy::type_complexity)]
 impl<'s> System<'s> for WinnerSystem {
     type SystemData = (
+        Entities<'s>,
         ReadStorage<'s, Ball>,
-        WriteStorage<'s, Velocity>,
         WriteStorage<'s, Transform>,
         WriteStorage<'s, UiText>,
         Write<'s, ScoreBoard>,
@@ -27,9 +26,17 @@ impl<'s> System<'s> for WinnerSystem {
 
     fn run(
         &mut self,
-        (balls, mut velocities, mut locals, mut ui_texts, mut score_board, score_text, arena): Self::SystemData,
+        (
+            entities,
+            balls,
+            mut locals,
+            mut ui_texts,
+            mut score_board,
+            score_text,
+            arena,
+        ): Self::SystemData,
     ) {
-        for (ball, velocity, transform) in (&balls, &mut velocities, &mut locals).join() {
+        for (entity, ball, transform) in (&entities, &balls, &mut locals).join() {
             let ball_pos = transform.translation();
 
             let winner = if ball_pos.x <= ball.radius {
@@ -58,9 +65,7 @@ impl<'s> System<'s> for WinnerSystem {
 
             if let Winner::None = winner {
             } else {
-                // reset ball
-                velocity.0.x = -velocity.0.x;
-                transform.set_x(arena.width / 2.0);
+                let _ = entities.delete(entity);
             }
         }
     }

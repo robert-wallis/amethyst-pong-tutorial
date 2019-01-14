@@ -15,59 +15,59 @@ pub struct ScoreText {
     pub right: Entity,
 }
 
-impl ScoreBoard {
-    pub fn init_entities(world: &mut World) {
-        let font = world.read_resource::<Loader>().load(
-            "resources/square.ttf",
-            TtfFormat,
-            (),
-            (),
-            &world.read_resource(),
-        );
+impl ScoreBoard {}
 
-        let left_pos = UiTransform::new(
-            "P1".to_string(),
-            Anchor::TopMiddle,
-            -50.,
-            -50.,
-            1.,
-            200.,
+pub fn init_entities(world: &mut World) {
+    let font = world.read_resource::<Loader>().load(
+        "resources/square.ttf",
+        TtfFormat,
+        (),
+        (),
+        &world.read_resource(),
+    );
+
+    let left_pos = UiTransform::new(
+        "P1".to_string(),
+        Anchor::TopMiddle,
+        -50.,
+        -50.,
+        1.,
+        200.,
+        50.,
+        0,
+    );
+    let right_pos = UiTransform::new(
+        "P2".to_string(),
+        Anchor::TopMiddle,
+        50.,
+        -50.,
+        1.,
+        200.,
+        50.,
+        0,
+    );
+
+    let left = world
+        .create_entity()
+        .with(left_pos)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1., 1., 1., 1.],
             50.,
-            0,
-        );
-        let right_pos = UiTransform::new(
-            "P2".to_string(),
-            Anchor::TopMiddle,
+        ))
+        .build();
+
+    let right = world
+        .create_entity()
+        .with(right_pos)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1., 1., 1., 1.],
             50.,
-            -50.,
-            1.,
-            200.,
-            50.,
-            0,
-        );
+        ))
+        .build();
 
-        let left = world
-            .create_entity()
-            .with(left_pos)
-            .with(UiText::new(
-                font.clone(),
-                "0".to_string(),
-                [1., 1., 1., 1.],
-                50.,
-            ))
-            .build();
-
-        let right = world
-            .create_entity()
-            .with(right_pos)
-            .with(UiText::new(
-                font.clone(),
-                "0".to_string(),
-                [1., 1., 1., 1.],
-                50.,
-            ))
-            .build();
-
-        world.add_resource(ScoreText { left, right });
-    }
+    world.add_resource(ScoreText { left, right });
 }

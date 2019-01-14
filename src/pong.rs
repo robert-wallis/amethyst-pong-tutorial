@@ -1,4 +1,4 @@
-use crate::{arena::Arena, ball::Ball, paddle, score::ScoreBoard};
+use crate::{arena::Arena, ball, paddle, score};
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::{nalgebra::Vector2, transform::Transform},
@@ -48,8 +48,8 @@ impl SimpleState for Pong {
         let arena = Arena::new_from_screen(screen.x, screen.y);
         self.init_main_camera(world, &arena);
         paddle::init_entities(world, &arena, sprite_sheet.clone());
-        Ball::init_entity(world, &arena, sprite_sheet);
-        ScoreBoard::init_entities(world);
+        ball::init_entity(world, &arena, sprite_sheet);
+        score::init_entities(world);
         world.add_resource(arena);
     }
 
