@@ -1,8 +1,9 @@
 [package]
-name = "pong_rob"
+name = "pong"
 version = "0.1.0"
 authors = ["Robert A. Wallis <smilingrob@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-amethyst = "0.10.0"
+amethyst = "0.10"
+rand = "0.6"
