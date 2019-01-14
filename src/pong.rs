@@ -33,7 +33,7 @@ impl SimpleState for Pong {
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
         let arena = Arena::new_from_screen(screen.x, screen.y);
-        self.camera = Some(init_camera(world, &arena));
+        self.camera = Some(init_main_camera(world, &arena, self.camera));
         let (left, right) = Paddle::init_entities(world, &arena, sprite_sheet.clone());
         self.left_paddle = Some(left);
         self.right_paddle = Some(right);
@@ -61,10 +61,7 @@ impl SimpleState for Pong {
         }) = event
         {
             let arena = Arena::new_from_screen(size.width as f32, size.height as f32);
-            if let Some(camera) = self.camera {
-                let _ = world.delete_entity(camera);
-            }
-            self.camera = Some(init_camera(&mut world, &arena));
+            self.camera = Some(init_main_camera(&mut world, &arena, self.camera));
             if let Some(right_paddle) = self.right_paddle {
                 let mut transforms = world.write_storage::<Transform>();
                 if let Some(transform) = transforms.get(right_paddle) {
@@ -79,7 +76,10 @@ impl SimpleState for Pong {
     }
 }
 
-fn init_camera(world: &mut World, arena: &Arena) -> Entity {
+fn init_main_camera(world: &mut World, arena: &Arena, camera: Option<Entity>) -> Entity {
+    if let Some(camera) = camera {
+        let _ = world.delete_entity(camera);
+    }
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world
