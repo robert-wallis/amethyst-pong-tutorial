@@ -26,17 +26,17 @@ impl Pong {
     /// Create a new arena and update systems related to arena size.
     fn resize_arena(&mut self, world: &mut World, size: (f32, f32)) {
         let arena = Arena::new_from_screen(size.0, size.1);
-        self.update_main_camera(world, &arena);
+        self.init_main_camera(world, &arena);
         paddle::update_paddle_locations(&world, &arena);
         world.add_resource(arena);
     }
 
     /// Re-initialize the main camera, esp. when the arena size changes.
-    fn update_main_camera(&mut self, world: &mut World, arena: &Arena) {
+    fn init_main_camera(&mut self, world: &mut World, arena: &Arena) {
         if let Some(camera) = self.camera {
             let _ = world.delete_entity(camera);
         }
-        self.camera = Some(init_main_camera(world, arena))
+        self.camera = Some(init_camera(world, arena))
     }
 }
 
@@ -46,7 +46,7 @@ impl SimpleState for Pong {
         let screen = screen_dimensions(world);
         let sprite_sheet = init_sprite_sheet(world);
         let arena = Arena::new_from_screen(screen.x, screen.y);
-        self.camera = Some(init_main_camera(world, &arena));
+        self.init_main_camera(world, &arena);
         paddle::init_entities(world, &arena, sprite_sheet.clone());
         Ball::init_entity(world, &arena, sprite_sheet);
         ScoreBoard::init_entities(world);
@@ -69,9 +69,12 @@ impl SimpleState for Pong {
 
         #[allow(clippy::single_match)]
         match event {
-            StateEvent::Window(WindowEvent { event: Resized(size), .. }) => {
+            StateEvent::Window(WindowEvent {
+                event: Resized(size),
+                ..
+            }) => {
                 self.resize_arena(&mut world, (size.width as f32, size.height as f32));
-            },
+            }
             _ => (),
         }
 
@@ -79,7 +82,7 @@ impl SimpleState for Pong {
     }
 }
 
-fn init_main_camera(world: &mut World, arena: &Arena) -> Entity {
+fn init_camera(world: &mut World, arena: &Arena) -> Entity {
     let mut transform = Transform::default();
     transform.set_z(1.0);
     world
